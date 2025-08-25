@@ -3,24 +3,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Moon, Sun, Trophy , ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import MatchCard from "@/components/MatchCard";
+import { mapCricApiMatch,getLiveMatches,getUpcomingMatches } from "../../services/cricket";
+import { Match } from "../../types/match";
 
-/**
- * Single-file React UI (Next.js friendly) for a Cricbuzz-like homepage:
- * - Top live score ticker (scrolling)
- * - Tabs: Live Matches | Upcoming | Results
- * - Match cards (teams, score, overs)
- * - Dark mode toggle (persisted)
- * - Clean Tailwind CSS styling
- *
- * Drop this into a Next.js app under `app/page.tsx` or any route as default export.
- * All data is mocked – wire it to your API later.
- */
 
-// -----------------------\n// Mock Data
+
 // -----------------------
 const mockLive = [
   {
-    id: "ind-aus-1",
+    id: "1",
     series: "Border-Gavaskar Trophy",
     status: "LIVE",
     venue: "Nagpur",
@@ -167,63 +159,6 @@ function Score({ runs, wkts, overs }: { runs: number; wkts: number; overs: numbe
   );
 }
 
-function MatchCard({
-  match,
-  cta = "Details",
-  footer,
-}: {
-  match: any;
-  cta?: string;
-  footer?: React.ReactNode;
-}) {
-  console.log(match.startTime);
-  
-  const isLive = match.status === "LIVE";
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="group relative rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow border-zinc-200 dark:border-zinc-800"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {isLive ? <Badge>LIVE</Badge> : <Pill>{match.format}</Pill>}
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">{match.series}</span>
-        </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">{match.venue}</span>
-      </div>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-        <div className="space-y-2">
-          <Team {...match.teams.home} />
-          {match.score?.home ? <Score {...match.score.home} /> : null}
-        </div>
-        <div className="space-y-2 sm:text-right">
-          <Team {...match.teams.away} />
-          {match.score?.away ? <Score {...match.score.away} /> : null}
-        </div>
-      </div>
-      {match.startTime ? (
-        <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">Starts: {match.startTime}</div>
-      ) : null}
-      {match.result ? (
-        <div className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-200">{match.result}</div>
-      ) : null}
-      {match.lastEvent ? (
-        <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">{match.lastEvent}</div>
-      ) : null}
-
-      <div className="mt-4 flex items-center justify-between">
-        <button className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm border bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-700">
-          {cta}
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        {footer}
-      </div>
-    </motion.div>
-  );
-}
 
 function Ticker({ text }: { text: string }) {
   // duplicate text to create continuous loop
@@ -270,10 +205,47 @@ const Tabs = ({ value, onChange }: { value: string; onChange: (v: string) => voi
 export default function CricketHome() {
   const { dark, setDark } = useDarkMode();
   const [tab, setTab] = useState<string>("live");
+   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
+const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
+const [resultMatches, setResultMatches] = useState<Match[]>([]);
+
+
+   useEffect(() => {
+  async function loadMatches() {
+    try {
+      const datalive = await getLiveMatches();
+      const upcoming = await getUpcomingMatches();
+      console.log(datalive);
+
+      // Map each match into your MatchCard shape
+      const live = datalive.data.map(mapCricApiMatch);
+      const upcomingMapped = upcoming.data.map(mapCricApiMatch);
+      console.log(upcomingMapped);
+
+      console.log(live);
+
+      // Split by status
+      setLiveMatches(live);
+      setUpcomingMatches(upcomingMapped);
+      console.log(liveMatches);
+
+    } catch (err) {
+      console.error("Error fetching matches:", err);
+    }
+  }
+  loadMatches();
+}, []);
+
+
 
   const tickerText = buildTicker(mockLive);
 
-  const list = tab === "live" ? mockLive : tab === "upcoming" ? mockUpcoming : mockResults;
+const list =
+  tab === "live"
+    ? liveMatches
+    : tab === "upcoming"
+    ? upcomingMatches
+    : resultMatches;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 text-zinc-900 dark:text-zinc-100">
@@ -317,7 +289,7 @@ export default function CricketHome() {
         {/* Grid of match cards */}
         <AnimatePresence mode="popLayout">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((m: any) => (
+            {list.map((m: Match) => (
               <MatchCard key={m.id} match={m} />
             ))}
           </div>
