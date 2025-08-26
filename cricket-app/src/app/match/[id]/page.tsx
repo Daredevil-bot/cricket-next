@@ -16,9 +16,9 @@ export default function MatchDetailsPage() {
       try {
         const res = await fetch(`/api/match/${id}`);
         const data = await res.json();
-        setMatch(data.data);
-       
-        
+
+        // since API returns an array, take first object
+        setMatch(Array.isArray(data) ? data[0] : data);
       } catch (err) {
         console.error("Error fetching match:", err);
       } finally {
@@ -28,45 +28,77 @@ export default function MatchDetailsPage() {
 
     fetchMatch();
   }, [id]);
-  console.log(match);
 
   if (loading) return <p className="p-5">Loading match details...</p>;
   if (!match) return <p className="p-5">Match not found</p>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto bg-white shadow-xl rounded-2xl">
-      <h1 className="text-2xl font-bold mb-2">{match.series}</h1>
-      <p className="text-gray-600 mb-4">{match.venue}</p>
-      <p className="mb-4 text-blue-600 font-medium">{match.status}</p>
+      <h1 className="text-2xl font-bold mb-2">{match.name}</h1>
+      <p className="text-gray-600 mb-2">{match.tournament_name}</p>
+      <p className="text-gray-600 mb-4">{match.arena_name}</p>
+      <p className="mb-4 text-blue-600 font-medium">
+        {match.status?.type?.toUpperCase()} - {match.status?.reason}
+      </p>
 
       {/* Teams */}
       <div className="flex justify-between items-center mb-6">
+        {/* Home */}
         <div className="text-center">
-          <img src={match.teams[0].flag} className="w-16 h-16 mx-auto mb-2" />
-          <p className="font-semibold">{match.teams[0]}</p>
-          <p className="text-gray-500">{match.score[0].score}</p>
+          <img
+            src={`https://cricbuzz-xx.imgix.net/${match.home_team_hash_image}.png`}
+            alt={match.home_team_name}
+            className="w-16 h-16 mx-auto mb-2"
+          />
+          <p className="font-semibold">{match.home_team_name}</p>
+          <p className="text-gray-500">{match.home_team_score?.display}</p>
         </div>
+
         <span className="text-lg font-bold">VS</span>
+
+        {/* Away */}
         <div className="text-center">
-          <img src={match.teamInfo[0].img} className="w-16 h-16 mx-auto mb-2" />
-          <p className="font-semibold">{match.teams[1].name}</p>
-          <p className="text-gray-500">{match.score[1].score}</p>
+          <img
+            src={`https://cricbuzz-xx.imgix.net/${match.away_team_hash_image}.png`}
+            alt={match.away_team_name}
+            className="w-16 h-16 mx-auto mb-2"
+          />
+          <p className="font-semibold">{match.away_team_name}</p>
+          <p className="text-gray-500">{match.away_team_score?.display}</p>
         </div>
       </div>
 
       {/* Extra Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-3 bg-gray-100 rounded-xl">
-          <p><b>Match Type:</b> {match.match}</p>
+          <p>
+            <b>League:</b> {match.league_name}
+          </p>
         </div>
         <div className="p-3 bg-gray-100 rounded-xl">
-          <p><b>Toss:</b> {match.toss}</p>
+          <p>
+            <b>Start Time:</b>{" "}
+            {new Date(match.start_time).toLocaleString("en-IN", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </p>
         </div>
         <div className="p-3 bg-gray-100 rounded-xl">
-          <p><b>Umpires:</b> {match.umpires}</p>
+          <p>
+            <b>End Time:</b>{" "}
+            {match.end_time &&
+              new Date(match.end_time).toLocaleString("en-IN", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+          </p>
         </div>
         <div className="p-3 bg-gray-100 rounded-xl">
-          <p><b>Referee:</b> {match.referee}</p>
+          <p>
+            <b>Duration:</b>{" "}
+            {match.duration ? `${match.duration / 3600} hours` : "N/A"}
+          </p>
         </div>
       </div>
     </div>

@@ -14,7 +14,11 @@ export async function GET(
       const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
 
     // Example API (replace with real Cricbuzz API)
-    const res = await fetch(`https://api.cricapi.com/v1/match_info?apikey=${apiKey}&id=${id.id}`);
+    const res = await fetch(`https://cricket.sportdevs.com/matches?id=eq.${id.id}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
     const data = await res.json();
     console.log(data);
 
