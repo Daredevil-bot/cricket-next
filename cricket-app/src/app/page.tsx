@@ -214,12 +214,9 @@ const [resultMatches, setResultMatches] = useState<Match[]>([]);
   async function loadMatches() {
     try {
       const datalive = await getLiveMatches();
-      const upcoming = await getUpcomingMatches();
-      console.log(datalive);
+      const live = datalive.map(mapCricApiMatch);
 
-      // Map each match into your MatchCard shape
-      const live = datalive.data.map(mapCricApiMatch);
-      const upcomingMapped = upcoming.data.map(mapCricApiMatch);
+      const upcomingMapped = mockUpcoming;
       console.log(upcomingMapped);
 
       console.log(live);

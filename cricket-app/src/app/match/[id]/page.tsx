@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,7 +16,9 @@ export default function MatchDetailsPage() {
       try {
         const res = await fetch(`/api/match/${id}`);
         const data = await res.json();
-        setMatch(data);
+        setMatch(data.data);
+       
+        
       } catch (err) {
         console.error("Error fetching match:", err);
       } finally {
@@ -25,6 +28,7 @@ export default function MatchDetailsPage() {
 
     fetchMatch();
   }, [id]);
+  console.log(match);
 
   if (loading) return <p className="p-5">Loading match details...</p>;
   if (!match) return <p className="p-5">Match not found</p>;
@@ -38,22 +42,22 @@ export default function MatchDetailsPage() {
       {/* Teams */}
       <div className="flex justify-between items-center mb-6">
         <div className="text-center">
-          <img src={match.teams.home.flag} className="w-16 h-16 mx-auto mb-2" />
-          <p className="font-semibold">{match.teams.home.name}</p>
-          <p className="text-gray-500">{match.teams.home.score}</p>
+          <img src={match.teams[0].flag} className="w-16 h-16 mx-auto mb-2" />
+          <p className="font-semibold">{match.teams[0]}</p>
+          <p className="text-gray-500">{match.score[0].score}</p>
         </div>
         <span className="text-lg font-bold">VS</span>
         <div className="text-center">
-          <img src={match.teams.away.flag} className="w-16 h-16 mx-auto mb-2" />
-          <p className="font-semibold">{match.teams.away.name}</p>
-          <p className="text-gray-500">{match.teams.away.score}</p>
+          <img src={match.teamInfo[0].img} className="w-16 h-16 mx-auto mb-2" />
+          <p className="font-semibold">{match.teams[1].name}</p>
+          <p className="text-gray-500">{match.score[1].score}</p>
         </div>
       </div>
 
       {/* Extra Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-3 bg-gray-100 rounded-xl">
-          <p><b>Match Type:</b> {match.format}</p>
+          <p><b>Match Type:</b> {match.match}</p>
         </div>
         <div className="p-3 bg-gray-100 rounded-xl">
           <p><b>Toss:</b> {match.toss}</p>

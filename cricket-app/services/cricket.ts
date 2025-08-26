@@ -1,73 +1,86 @@
 // services/cricket.ts
 
+import { log } from "console";
+
+// services/cricket.ts
+// utils/mappers.ts
+function buildTeamImage(hash?: string) {
+  if (!hash) return null;
+  return `https://images.fancode.com/hash/${hash}.png`; // adjust base URL as per API docs
+}
+
 export function mapCricApiMatch(m: any) {
   return {
-    id: m.id ?? m.unique_id ?? crypto.randomUUID(), // fallback if missing
-    series: m.name || m.title || "Unknown Series",
-    status: m.status || (m.matchStarted ? "Live" : "Upcoming"),
-    venue: m.venue || "TBD",
-    format: m.matchType || m.type || "TBD",
-    date: m.dateTimeGMT || m.date || null, // useful for upcoming matches
-
+    id: m.id,
+    series: m.tournament_name,
+    status: m.status?.type || "upcoming",
+    venue: m.arena_name,
+    format: m.league_name,
     teams: {
       home: {
-        name: m.teams?.[0] || m["team-1"] || "TBD",
-        short: m.teams?.[0]
-          ? m.teams[0].slice(0, 3).toUpperCase()
-          : (m["team-1"]?.slice(0, 3).toUpperCase() ?? ""),
-        flag: "",
+        name: m.home_team_name,
+        short: m.home_team_name.slice(0, 3).toUpperCase(),
+        flag: buildTeamImage(m.home_team_hash_image),
       },
       away: {
-        name: m.teams?.[1] || m["team-2"] || "TBD",
-        short: m.teams?.[1]
-          ? m.teams[1].slice(0, 3).toUpperCase()
-          : (m["team-2"]?.slice(0, 3).toUpperCase() ?? ""),
-        flag: "",
+        name: m.away_team_name,
+        short: m.away_team_name.slice(0, 3).toUpperCase(),
+        flag: buildTeamImage(m.away_team_hash_image),
       },
     },
-
-    score: m.score
-      ? {
-          home: m.score[0]
-            ? { runs: m.score[0].r, wkts: m.score[0].w, overs: m.score[0].o }
-            : { runs: 0, wkts: 0, overs: 0 },
-          away: m.score[1]
-            ? { runs: m.score[1].r, wkts: m.score[1].w, overs: m.score[1].o }
-            : { runs: 0, wkts: 0, overs: 0 },
-          batting: m.score[0] ? "home" : "away",
-        }
-      : {
-          home: { runs: 0, wkts: 0, overs: 0 },
-          away: { runs: 0, wkts: 0, overs: 0 },
-          batting: "none",
-        },
-
-    lastEvent: m.score?.[0]?.inning || m.description || "No update",
+    score: {
+      home: m.home_team_score
+        ? {
+            runs: m.home_team_score.display,
+            wkts: "-", // not available in your payload
+            overs: "-", // not available in your payload
+          }
+        : null,
+      away: m.away_team_score
+        ? {
+            runs: m.away_team_score.display,
+            wkts: "-",
+            overs: "-",
+          }
+        : null,
+    },
+    startTime: m.start_time,
+    result: m.status?.reason || null,
   };
 }
+
+
+
 
 export async function getLiveMatches() {
   const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
 
   const res = await fetch(
-    `https://api.cricapi.com/v1/currentMatches?apikey=${apiKey}&offset=0`,
-    { cache: "no-store" }
+    `https://cricket.sportdevs.com/matches-live`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    }
   );
 
   if (!res.ok) throw new Error("Failed to fetch matches");
+  const data = await res.json();
+  console.log(data);
 
-  return res.json();
+  return data;
 }
 
-export async function getUpcomingMatches() {
-  const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
+// export async function getUpcomingMatches() {
+//   const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
 
-  const res = await fetch(
-    `https://api.cricapi.com/v1/matches?apikey=${apiKey}&offset=0`,
-    { cache: "no-store" }
-  );
+//   const res = await fetch(
+//     `https://api.cricapi.com/v1/matches?apikey=${apiKey}&offset=0`,
+//     { cache: "no-store" }
+//   );
 
-  if (!res.ok) throw new Error("Failed to fetch matches");
+//   if (!res.ok) throw new Error("Failed to fetch matches");
 
-  return res.json();
-}
+//   return res.json();
+// }

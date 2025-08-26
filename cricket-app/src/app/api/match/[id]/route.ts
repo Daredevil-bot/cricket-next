@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  console.log('in backend');
+
+  const id = await context.params;
+  console.log(id.id);
+
 
   try {
+      const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
+
     // Example API (replace with real Cricbuzz API)
-    const res = await fetch(`https://cricbuzz-api.example.com/match/${id}`);
+    const res = await fetch(`https://api.cricapi.com/v1/match_info?apikey=${apiKey}&id=${id.id}`);
     const data = await res.json();
+    console.log(data);
+
 
     return NextResponse.json(data);
   } catch (error) {

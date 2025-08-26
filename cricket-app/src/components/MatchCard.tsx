@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Match } from "../../types/match";
+import Image from "next/image";
 
 function MatchCard({ match }: { match: Match }) {
   const isLive = match.status === "LIVE";
@@ -14,8 +15,8 @@ function MatchCard({ match }: { match: Match }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         className="group relative rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 
-                   backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow 
-                   border-zinc-200 dark:border-zinc-800 cursor-pointer"
+                  backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow 
+                  border-zinc-200 dark:border-zinc-800 cursor-pointer"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -24,22 +25,53 @@ function MatchCard({ match }: { match: Match }) {
             ) : (
               <span className="text-xs text-gray-500">{match.format}</span>
             )}
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{match.series}</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              {match.series}
+            </span>
           </div>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">{match.venue}</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            {match.venue}
+          </span>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-4 items-center">
-          <div>
-            {match.teams.home.flag} {match.teams.home.short}
+          {/* Home team */}
+          <div className="flex items-center gap-2">
+            {match.teams.home.flag && (
+              <Image
+                src={match.teams.home.flag}
+                alt={`${match.teams.home.name} flag`}
+                width={24}
+                height={24}
+                className="rounded-full object-contain"
+              />
+            )}
+            <span>{match.teams.home.short}</span>
             {match.score?.home && (
-              <div className="font-bold">{match.score.home.runs}/{match.score.home.wkts} ({match.score.home.overs})</div>
+              <div className="font-bold">
+                {match.score.home.runs}/{match.score.home.wkts} (
+                {match.score.home.overs})
+              </div>
             )}
           </div>
-          <div className="text-right">
-            {match.teams.away.flag} {match.teams.away.short}
+
+          {/* Away team */}
+          <div className="flex items-center justify-end gap-2">
+            {match.teams.away.flag && (
+              <Image
+                src={match.teams.away.flag}
+                alt={`${match.teams.away.name} flag`}
+                width={24}
+                height={24}
+                className="rounded-full object-contain"
+              />
+            )}
+            <span>{match.teams.away.short}</span>
             {match.score?.away && (
-              <div className="font-bold">{match.score.away.runs}/{match.score.away.wkts} ({match.score.away.overs})</div>
+              <div className="font-bold">
+                {match.score.away.runs}/{match.score.away.wkts} (
+                {match.score.away.overs})
+              </div>
             )}
           </div>
         </div>
@@ -55,7 +87,9 @@ function MatchCard({ match }: { match: Match }) {
           </div>
         )}
         {match.lastEvent && (
-          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">{match.lastEvent}</div>
+          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+            {match.lastEvent}
+          </div>
         )}
 
         <div className="mt-4 flex items-center justify-between text-emerald-600 dark:text-emerald-400">
