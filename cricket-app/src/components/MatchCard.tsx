@@ -40,7 +40,7 @@ function MatchCard({ match }: { match: Match }) {
             {match.teams.home.flag && (
               <Image
                 src={match.teams.home.flag}
-                alt={`${match.teams.home.name} flag`}
+                alt={`${match.teams.home} flag`}
                 width={24}
                 height={24}
                 className="rounded-full object-contain"
@@ -57,15 +57,20 @@ function MatchCard({ match }: { match: Match }) {
 
           {/* Away team */}
           <div className="flex items-center justify-end gap-2">
-            {match.teams.away.flag && (
-              <Image
-                src={match.teams.away.flag}
-                alt={`${match.teams.away.name} flag`}
-                width={24}
-                height={24}
-                className="rounded-full object-contain"
-              />
-            )}
+            {match.teams.home.flag ? (
+  <Image
+    src={match.teams.home.flag.startsWith("http") ? match.teams.home.flag : "/default-flag.png"}
+    alt={`${match.teams.home} flag`}
+    width={24}
+    height={24}
+    className="rounded-full"
+  />
+) : (
+  <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs">
+    🏳️
+  </div>
+)}
+
             <span>{match.teams.away.short}</span>
             {match.score?.away && (
               <div className="font-bold">

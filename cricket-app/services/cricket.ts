@@ -72,6 +72,26 @@ export async function getLiveMatches() {
   return data;
 }
 
+export async function getFinishedMatches() {
+  const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
+
+  const res = await fetch(
+    `https://cricket.sportdevs.com/matches`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch matches");
+  const data = await res.json();
+  console.log(data);
+
+  return data;
+}
+
 // export async function getUpcomingMatches() {
 //   const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
 

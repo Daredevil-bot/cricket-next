@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Moon, Sun, Trophy , ChevronRight } from "lucide-react";
+import { Moon, Sun, Trophy, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "@/components/MatchCard";
-import { mapCricApiMatch,getLiveMatches,getUpcomingMatches } from "../../services/cricket";
+import { mapCricApiMatch, getLiveMatches, getFinishedMatches } from "../../services/cricket";
 import { Match } from "../../types/match";
-
-
+import { s } from "framer-motion/client";
 
 // -----------------------
 const mockLive = [
@@ -103,7 +102,12 @@ const mockResults = [
 
 // Flatten a small ticker line from live matches
 function buildTicker(lines: typeof mockLive) {
-  return lines.map(m => `${m.teams.home.short} ${m.score.home.runs}/${m.score.home.wkts} (${m.score.home.overs}) vs ${m.teams.away.short} • ${m.series}`).join("  •  ");
+  return lines
+    .map(
+      (m) =>
+        `${m.teams.home.short} ${m.score.home.runs}/${m.score.home.wkts} (${m.score.home.overs}) vs ${m.teams.away.short} • ${m.series}`
+    )
+    .join("  •  ");
 }
 
 // -----------------------\n// UI Helpers
@@ -112,7 +116,9 @@ const useDarkMode = () => {
   const [dark, setDark] = useState(false);
   useEffect(() => {
     const saved = localStorage.getItem("theme");
-    const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const prefers =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
     const init = saved ? saved === "dark" : prefers;
     setDark(init);
     document.documentElement.classList.toggle("dark", init);
@@ -124,45 +130,65 @@ const useDarkMode = () => {
   return { dark, setDark } as const;
 };
 
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-emerald-600/10 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 dark:border-emerald-400/30 dark:bg-emerald-400/10">
-      {children}
-    </span>
-  );
-}
+// function Badge({ children }: { children: React.ReactNode }) {
+//   return (
+//     <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-emerald-600/10 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 dark:border-emerald-400/30 dark:bg-emerald-400/10">
+//       {children}
+//     </span>
+//   );
+// }
 
-function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
-      {children}
-    </span>
-  );
-}
+// function Pill({ children }: { children: React.ReactNode }) {
+//   return (
+//     <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
+//       {children}
+//     </span>
+//   );
+// }
 
-function Team({ flag, name, short }: { flag: string; name: string; short: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-lg leading-none select-none">{flag}</span>
-      <span className="font-semibold tracking-wide">{short}</span>
-      <Pill>{name}</Pill>
-    </div>
-  );
-}
+// function Team({
+//   flag,
+//   name,
+//   short,
+// }: {
+//   flag: string;
+//   name: string;
+//   short: string;
+// }) {
+//   return (
+//     <div className="flex items-center gap-2">
+//       <span className="text-lg leading-none select-none">{flag}</span>
+//       <span className="font-semibold tracking-wide">{short}</span>
+//       <Pill>{name}</Pill>
+//     </div>
+//   );
+// }
 
-function Score({ runs, wkts, overs }: { runs: number; wkts: number; overs: number }) {
-  return (
-    <div className="text-2xl font-bold tabular-nums">
-      {runs}/{wkts}
-      <span className="ml-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">({overs})</span>
-    </div>
-  );
-}
-
+// function Score({
+//   runs,
+//   wkts,
+//   overs,
+// }: {
+//   runs: number;
+//   wkts: number;
+//   overs: number;
+// }) {
+//   return (
+//     <div className="text-2xl font-bold tabular-nums">
+//       {runs}/{wkts}
+//       <span className="ml-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+//         ({overs})
+//       </span>
+//     </div>
+//   );
+// }
 
 function Ticker({ text }: { text: string }) {
   // duplicate text to create continuous loop
-  const content = useMemo(() => `${text}   ✦   ${text}   ✦   ${text}   ✦   ${text}`, [text]);
+  const content = useMemo(
+    () => `${text}   ✦   ${text}   ✦   ${text}   ✦   ${text}`,
+    [text]
+  );
   return (
     <div className="relative overflow-hidden rounded-xl border bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
       <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-white dark:from-zinc-900 to-transparent pointer-events-none" />
@@ -180,7 +206,13 @@ function Ticker({ text }: { text: string }) {
   );
 }
 
-const Tabs = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+const Tabs = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
   <div className="inline-flex rounded-2xl border bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 p-1">
     {[
       { key: "live", label: "Live Matches" },
@@ -205,44 +237,70 @@ const Tabs = ({ value, onChange }: { value: string; onChange: (v: string) => voi
 export default function CricketHome() {
   const { dark, setDark } = useDarkMode();
   const [tab, setTab] = useState<string>("live");
-   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
-const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
-const [resultMatches, setResultMatches] = useState<Match[]>([]);
+  const [liveMatches, setLiveMatches] = useState<Match[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
+  const [resultMatches, setResultMatches] = useState<Match[]>([]);
+  const [search, setSearch] = useState("");
+  const [format, setFormat] = useState("all"); // all | t20 | odi | test
+  const [status, setStatus] = useState("all"); // all | live | upcoming | completed
 
+  useEffect(() => {
+    async function loadMatches() {
+      try {
+        const datalive = await getLiveMatches();
+        const live = datalive.map(mapCricApiMatch);
+        const datafinished = await getFinishedMatches();
+        const finished = datafinished.map(mapCricApiMatch);
 
-   useEffect(() => {
-  async function loadMatches() {
-    try {
-      const datalive = await getLiveMatches();
-      const live = datalive.map(mapCricApiMatch);
+        setResultMatches(finished);
 
-      const upcomingMapped = mockUpcoming;
-      console.log(upcomingMapped);
+        const upcomingMapped = mockUpcoming;
+        console.log(upcomingMapped);
 
-      console.log(live);
+        console.log(live);
 
-      // Split by status
-      setLiveMatches(live);
-      setUpcomingMatches(upcomingMapped);
-      console.log(liveMatches);
-
-    } catch (err) {
-      console.error("Error fetching matches:", err);
+        // Split by status
+        setLiveMatches(live);
+        setUpcomingMatches(upcomingMapped);
+        console.log(liveMatches);
+      } catch (err) {
+        console.error("Error fetching matches:", err);
+      }
     }
-  }
-  loadMatches();
-}, []);
-
-
+    loadMatches();
+  }, []);
 
   const tickerText = buildTicker(mockLive);
 
-const list =
-  tab === "live"
-    ? liveMatches
-    : tab === "upcoming"
-    ? upcomingMatches
-    : resultMatches;
+  const list =
+    tab === "live"
+      ? liveMatches
+      : tab === "upcoming"
+      ? upcomingMatches
+      : resultMatches;
+
+  const filteredList = list.filter((m: any) => {
+    const query = search.toLowerCase();
+    const matchSearch =
+      m.series?.toLowerCase().includes(query) ||
+      m.venue?.toLowerCase().includes(query) ||
+      m.teams?.home?.name?.toLowerCase().includes(query) ||
+      m.teams?.away?.name?.toLowerCase().includes(query);
+
+    const matchFormat =
+      format === "all" || m.format?.toLowerCase() === format.toLowerCase();
+
+   const matchStatus =
+  status === "all" ||
+  m.status?.toLowerCase() === status.toLowerCase();
+  console.log(m);
+  
+console.log(m.status?.type?.toLowerCase());
+console.log(status.toLowerCase());
+
+
+    return matchSearch && matchFormat && matchStatus;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 text-zinc-900 dark:text-zinc-100">
@@ -250,14 +308,26 @@ const list =
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-zinc-900/60 bg-white/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-6xl px-3 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-2xl grid place-items-center bg-emerald-600 text-white shadow-sm"><Trophy  className="h-5 w-5"/></div>
-            <span className="text-xl font-bold tracking-tight">CricketLive</span>
+            <div className="h-9 w-9 rounded-2xl grid place-items-center bg-emerald-600 text-white shadow-sm">
+              <Trophy className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold tracking-tight">
+              CricketLive
+            </span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a className="hover:opacity-80" href="#">Home</a>
-            <a className="hover:opacity-80" href="#live">Live</a>
-            <a className="hover:opacity-80" href="#schedule">Schedule</a>
-            <a className="hover:opacity-80" href="#news">News</a>
+            <a className="hover:opacity-80" href="#">
+              Home
+            </a>
+            <a className="hover:opacity-80" href="#live">
+              Live
+            </a>
+            <a className="hover:opacity-80" href="#schedule">
+              Schedule
+            </a>
+            <a className="hover:opacity-80" href="#news">
+              News
+            </a>
           </nav>
           <button
             onClick={() => setDark(!dark)}
@@ -265,7 +335,9 @@ const list =
             aria-label="Toggle theme"
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span className="hidden sm:inline">{dark ? "Light" : "Dark"} mode</span>
+            <span className="hidden sm:inline">
+              {dark ? "Light" : "Dark"} mode
+            </span>
           </button>
         </div>
       </header>
@@ -282,14 +354,61 @@ const list =
           <h2 className="text-lg sm:text-xl font-semibold">Matches</h2>
           <Tabs value={tab} onChange={setTab} />
         </div>
+        <div className="mt-4 space-y-3">
+          <input
+            type="text"
+            placeholder="Search by team, series, or venue..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:w-1/2 p-2 border rounded-lg"
+          />
+
+          <div className="flex gap-4">
+            <select
+              value={format}
+              onChange={(e) => setFormat(e.target.value)}
+              className="p-2 border rounded-lg"
+            >
+              <option value="all">All Formats</option>
+              <option value="t20">T20</option>
+              <option value="odi">ODI</option>
+              <option value="test">Test</option>
+            </select>
+
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="p-2 border rounded-lg"
+            >
+              <option value="all">All Status</option>
+              <option value="live">Live</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="finished">Finished</option>
+            </select>
+          </div>
+        </div>
 
         {/* Grid of match cards */}
         <AnimatePresence mode="popLayout">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((m: Match) => (
-              <MatchCard key={m.id} match={m} />
-            ))}
-          </div>
+          {filteredList.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredList.map((m: Match) => (
+                <MatchCard key={m.id} match={m} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center text-zinc-500 dark:text-zinc-400">
+              <Trophy className="h-12 w-12 mb-3 opacity-50" />
+              <p className="text-lg font-semibold">
+                {tab === "live"
+                  ? "No live matches at the moment"
+                  : tab === "upcoming"
+                  ? "No upcoming matches scheduled"
+                  : "No results available"}
+              </p>
+              <p className="text-sm">Check back later for updates.</p>
+            </div>
+          )}
         </AnimatePresence>
 
         {/* Home extras: News & Sidebar placeholders */}
@@ -298,12 +417,16 @@ const list =
             <div className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800">
               <h3 className="text-base font-semibold">Top Stories</h3>
               <ul className="mt-3 space-y-3">
-                {[1,2,3,4].map(i => (
+                {[1, 2, 3, 4].map((i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <div className="h-16 w-24 rounded-xl bg-zinc-100 dark:bg-zinc-800"/>
+                    <div className="h-16 w-24 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
                     <div>
-                      <p className="font-medium">Hardik smashes career-best in last-over thriller</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">2 hours ago • Mumbai</p>
+                      <p className="font-medium">
+                        Hardik smashes career-best in last-over thriller
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        2 hours ago • Mumbai
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -314,18 +437,37 @@ const list =
             <div className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800">
               <h4 className="text-sm font-semibold">Standings (placeholder)</h4>
               <ul className="mt-2 space-y-2 text-sm">
-                <li className="flex justify-between"><span>IND</span><span>1</span></li>
-                <li className="flex justify-between"><span>AUS</span><span>2</span></li>
-                <li className="flex justify-between"><span>ENG</span><span>3</span></li>
-                <li className="flex justify-between"><span>SA</span><span>4</span></li>
+                <li className="flex justify-between">
+                  <span>IND</span>
+                  <span>1</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>AUS</span>
+                  <span>2</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>ENG</span>
+                  <span>3</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>SA</span>
+                  <span>4</span>
+                </li>
               </ul>
             </div>
             <div className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800">
               <h4 className="text-sm font-semibold">Subscribe</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Get match alerts & news in your inbox.</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Get match alerts & news in your inbox.
+              </p>
               <div className="mt-3 flex gap-2">
-                <input className="flex-1 rounded-xl border px-3 py-2 bg-transparent border-zinc-200 dark:border-zinc-700" placeholder="you@email.com"/>
-                <button className="rounded-xl px-3 py-2 text-sm border bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-700">Notify me</button>
+                <input
+                  className="flex-1 rounded-xl border px-3 py-2 bg-transparent border-zinc-200 dark:border-zinc-700"
+                  placeholder="you@email.com"
+                />
+                <button className="rounded-xl px-3 py-2 text-sm border bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-700">
+                  Notify me
+                </button>
               </div>
             </div>
           </aside>
