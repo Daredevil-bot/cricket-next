@@ -9,6 +9,26 @@ function buildTeamImage(hash?: string) {
   return `https://images.fancode.com/hash/${hash}.png`; // adjust base URL as per API docs
 }
 
+export async function getTournaments() {
+  const apiKey = process.env.NEXT_PUBLIC_CRICAPI_KEY;
+
+  const res = await fetch(
+    `https://cricket.sportdevs.com/tournaments`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    }
+  )
+  if (!res.ok) throw new Error("Failed to fetch matches");
+  const data = await res.json();
+  console.log(data);
+
+  return data;
+}
+  
+
 export function mapCricApiMatch(m: any) {
   return {
     id: m.id,
@@ -85,6 +105,8 @@ export async function getFinishedMatches() {
     }
   );
 
+
+  
   if (!res.ok) throw new Error("Failed to fetch matches");
   const data = await res.json();
   console.log(data);

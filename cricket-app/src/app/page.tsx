@@ -4,7 +4,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Moon, Sun, Trophy, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "@/components/MatchCard";
-import { mapCricApiMatch, getLiveMatches, getFinishedMatches } from "../../services/cricket";
+import {
+  mapCricApiMatch,
+  getLiveMatches,
+  getFinishedMatches,
+  getTournaments,
+} from "../../services/cricket";
 import { Match } from "../../types/match";
 import { s } from "framer-motion/client";
 
@@ -43,6 +48,27 @@ const mockLive = [
       batting: "home",
     },
     lastEvent: "SIX! pulled behind square",
+  },
+];
+
+const mockTournaments = [
+  {
+    id: "ipl-2025",
+    name: "Indian Premier League 2025",
+    startDate: "Mar 25",
+    endDate: "May 29",
+  },
+  {
+    id: "sma-2025",
+    name: "Syed Mushtaq Ali Trophy 2025",
+    startDate: "Oct 10",
+    endDate: "Nov 5",
+  },
+  {
+    id: "wc-2027",
+    name: "ICC World Cup 2027",
+    startDate: "Feb 14",
+    endDate: "Mar 29",
   },
 ];
 
@@ -243,6 +269,7 @@ export default function CricketHome() {
   const [search, setSearch] = useState("");
   const [format, setFormat] = useState("all"); // all | t20 | odi | test
   const [status, setStatus] = useState("all"); // all | live | upcoming | completed
+  const [tournaments, setTournaments] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadMatches() {
@@ -251,9 +278,10 @@ export default function CricketHome() {
         const live = datalive.map(mapCricApiMatch);
         const datafinished = await getFinishedMatches();
         const finished = datafinished.map(mapCricApiMatch);
+        const datatournaments = await getTournaments();
 
         setResultMatches(finished);
-
+        setTournaments(datatournaments);
         const upcomingMapped = mockUpcoming;
         console.log(upcomingMapped);
 
@@ -290,14 +318,12 @@ export default function CricketHome() {
     const matchFormat =
       format === "all" || m.format?.toLowerCase() === format.toLowerCase();
 
-   const matchStatus =
-  status === "all" ||
-  m.status?.toLowerCase() === status.toLowerCase();
-  console.log(m);
-  
-console.log(m.status?.type?.toLowerCase());
-console.log(status.toLowerCase());
+    const matchStatus =
+      status === "all" || m.status?.toLowerCase() === status.toLowerCase();
+    console.log(m);
 
+    console.log(m.status?.type?.toLowerCase());
+    console.log(status.toLowerCase());
 
     return matchSearch && matchFormat && matchStatus;
   });
@@ -410,6 +436,40 @@ console.log(status.toLowerCase());
             </div>
           )}
         </AnimatePresence>
+        <section className="mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg sm:text-xl font-semibold">Tournaments</h2>
+            <a
+              href="/tournaments"
+              className="text-sm font-medium text-emerald-600 hover:underline"
+            >
+              See all
+            </a>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {mockTournaments.slice(0, 3).map((t) => (
+              <div
+                key={t.id}
+                className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 
+                           border-zinc-200 dark:border-zinc-800 flex flex-col justify-between"
+              >
+                <div>
+                  <h3 className="font-semibold text-base">{t.name}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {t.startDate} – {t.endDate}
+                  </p>
+                </div>
+                <button
+                  className="mt-3 inline-flex items-center text-sm font-medium text-emerald-600"
+                  onClick={() => (window.location.href = `/tournament/${t.id}`)}
+                >
+                  View details <ChevronRight className="ml-1 h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Home extras: News & Sidebar placeholders */}
         <div id="news" className="grid gap-4 lg:grid-cols-3">
