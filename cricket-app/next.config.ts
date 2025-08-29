@@ -2,7 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["images.fancode.com"], // ✅ allow fancode images
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.cricket.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.fancode.com",
+      },
+    ],
   },
 };
 

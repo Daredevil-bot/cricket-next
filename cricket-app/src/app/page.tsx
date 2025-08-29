@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Moon, Sun, Trophy, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "@/components/MatchCard";
+import Navbar from "@/components/Navbar";
+
 import {
   mapCricApiMatch,
   getLiveMatches,
@@ -331,42 +333,7 @@ export default function CricketHome() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 text-zinc-900 dark:text-zinc-100">
       {/* Navbar */}
-      <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-zinc-900/60 bg-white/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-6xl px-3 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-2xl grid place-items-center bg-emerald-600 text-white shadow-sm">
-              <Trophy className="h-5 w-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              CricketLive
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a className="hover:opacity-80" href="#">
-              Home
-            </a>
-            <a className="hover:opacity-80" href="#live">
-              Live
-            </a>
-            <a className="hover:opacity-80" href="#schedule">
-              Schedule
-            </a>
-            <a className="hover:opacity-80" href="#news">
-              News
-            </a>
-          </nav>
-          <button
-            onClick={() => setDark(!dark)}
-            className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-700"
-            aria-label="Toggle theme"
-          >
-            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span className="hidden sm:inline">
-              {dark ? "Light" : "Dark"} mode
-            </span>
-          </button>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Ticker */}
       <section className="mx-auto max-w-6xl px-3 sm:px-6 mt-4">
@@ -448,7 +415,7 @@ export default function CricketHome() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {mockTournaments.slice(0, 3).map((t) => (
+            {tournaments.slice(0, 3).map((t) => (
               <div
                 key={t.id}
                 className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 
