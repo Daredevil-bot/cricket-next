@@ -1,6 +1,10 @@
 export type Match = {
   id: string;  // make sure it's string
-  teams: { home: { short: string; flag?: string }, away: { short: string; flag?: string } };
+  teams: { home: {
+    name: any; short: string; flag?: string 
+}, away: {
+    name: any; short: string; flag?: string 
+} };
   score?: {
     home?: { runs: number; wkts: number; overs: string };
     away?: { runs: number; wkts: number; overs: string };

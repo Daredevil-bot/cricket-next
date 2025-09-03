@@ -5,6 +5,7 @@ import { Moon, Sun, Trophy, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "@/components/MatchCard";
 import Navbar from "@/components/Navbar";
+import { Tournament } from "@/interface/interfaces";
 
 import {
   mapCricApiMatch,
@@ -129,7 +130,7 @@ const mockResults = [
 ];
 
 // Flatten a small ticker line from live matches
-function buildTicker(lines: typeof mockLive) {
+function buildTicker(lines: typeof mockLive) { 
   return lines
     .map(
       (m) =>
@@ -157,59 +158,6 @@ const useDarkMode = () => {
   }, [dark]);
   return { dark, setDark } as const;
 };
-
-// function Badge({ children }: { children: React.ReactNode }) {
-//   return (
-//     <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-emerald-600/10 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 dark:border-emerald-400/30 dark:bg-emerald-400/10">
-//       {children}
-//     </span>
-//   );
-// }
-
-// function Pill({ children }: { children: React.ReactNode }) {
-//   return (
-//     <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
-//       {children}
-//     </span>
-//   );
-// }
-
-// function Team({
-//   flag,
-//   name,
-//   short,
-// }: {
-//   flag: string;
-//   name: string;
-//   short: string;
-// }) {
-//   return (
-//     <div className="flex items-center gap-2">
-//       <span className="text-lg leading-none select-none">{flag}</span>
-//       <span className="font-semibold tracking-wide">{short}</span>
-//       <Pill>{name}</Pill>
-//     </div>
-//   );
-// }
-
-// function Score({
-//   runs,
-//   wkts,
-//   overs,
-// }: {
-//   runs: number;
-//   wkts: number;
-//   overs: number;
-// }) {
-//   return (
-//     <div className="text-2xl font-bold tabular-nums">
-//       {runs}/{wkts}
-//       <span className="ml-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-//         ({overs})
-//       </span>
-//     </div>
-//   );
-// }
 
 function Ticker({ text }: { text: string }) {
   // duplicate text to create continuous loop
@@ -271,7 +219,7 @@ export default function CricketHome() {
   const [search, setSearch] = useState("");
   const [format, setFormat] = useState("all"); // all | t20 | odi | test
   const [status, setStatus] = useState("all"); // all | live | upcoming | completed
-  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
   useEffect(() => {
     async function loadMatches() {
@@ -309,7 +257,7 @@ export default function CricketHome() {
       ? upcomingMatches
       : resultMatches;
 
-  const filteredList = list.filter((m: any) => {
+  const filteredList = list.filter((m: Match) => {
     const query = search.toLowerCase();
     const matchSearch =
       m.series?.toLowerCase().includes(query) ||
@@ -324,7 +272,6 @@ export default function CricketHome() {
       status === "all" || m.status?.toLowerCase() === status.toLowerCase();
     console.log(m);
 
-    console.log(m.status?.type?.toLowerCase());
     console.log(status.toLowerCase());
 
     return matchSearch && matchFormat && matchStatus;
@@ -385,8 +332,8 @@ export default function CricketHome() {
         <AnimatePresence mode="popLayout">
           {filteredList.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredList.map((m: Match) => (
-                <MatchCard key={m.id} match={m} />
+              {filteredList.map((m: Match, idx: number) => (
+                <MatchCard key={m?.id || idx} match={m} />
               ))}
             </div>
           ) : (
@@ -415,21 +362,21 @@ export default function CricketHome() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tournaments.slice(0, 3).map((t) => (
-              <div
-                key={t.id}
-                className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 
-                           border-zinc-200 dark:border-zinc-800 flex flex-col justify-between"
-              >
+            {(tournaments || []).slice(0, 3).map((t, idx) => (
+              <div key={t?.id || idx} className="rounded-2xl border p-4 ...">
                 <div>
-                  <h3 className="font-semibold text-base">{t.name}</h3>
+                  <h3 className="font-semibold text-base">
+                    {t?.name || "Unnamed Tournament"}
+                  </h3>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {t.startDate} – {t.endDate}
+                    {t?.startDate || "TBD"} – {t?.endDate || "TBD"}
                   </p>
                 </div>
                 <button
                   className="mt-3 inline-flex items-center text-sm font-medium text-emerald-600"
-                  onClick={() => (window.location.href = `/tournament/${t.id}`)}
+                  onClick={() =>
+                    t?.id && (window.location.href = `/tournament/${t.id}`)
+                  }
                 >
                   View details <ChevronRight className="ml-1 h-4 w-4" />
                 </button>

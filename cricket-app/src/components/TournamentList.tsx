@@ -1,12 +1,12 @@
 "use client";
 
-import { Trophy } from "lucide-react";
-import TournamentCard from "./TournamentCard";
+import React from "react";
+import TournamentCard from "@/components/TournamentCard";
 
 interface Tournament {
-  id: number;
+  id: number | string;
   name: string;
-  seasonList: { id: number; name: string }[];
+  seasonList?: { id: number; name: string }[];
   hash_image?: string;
 }
 
@@ -14,29 +14,27 @@ interface TournamentListProps {
   tournaments: Tournament[];
 }
 
-export default function TournamentList({ tournaments }: TournamentListProps) {
-  if (tournaments.length === 0) {
-    return <div className="text-gray-500">No tournaments available for this league.</div>;
+const TournamentList: React.FC<TournamentListProps> = ({ tournaments }) => {
+  if (!tournaments || tournaments.length === 0) {
+    return <p className="p-5">No tournaments available.</p>;
   }
 
   return (
-    <>
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        <Trophy className="h-5 w-5 text-emerald-600" />
-        Tournaments
-      </h2>
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {tournaments.map((t) => (
+    <div className="p-6 max-w-5xl mx-auto bg-gray-50 min-h-screen">
+      <h1 className="text-2xl font-bold mb-4">Tournaments</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {tournaments.map((tournament) => (
           <TournamentCard
-            key={t.id}
-            id={t.id}
-            name={t.name}
-            hash_image={t.hash_image}
-            seasonCount={t.seasonList?.length || 0}
+            key={tournament.id}
+            id={typeof tournament.id === "string" ? parseInt(tournament.id) : tournament.id}
+            name={tournament.name}
+            hash_image={tournament.hash_image}
+            seasonCount={tournament.seasonList ? tournament.seasonList.length : 0}
           />
         ))}
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default TournamentList;

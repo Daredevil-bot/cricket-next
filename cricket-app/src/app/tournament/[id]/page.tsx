@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Calendar, Trophy } from "lucide-react";
 
 interface Tournament {
   id: number;
@@ -21,26 +22,50 @@ interface Season {
   end_date?: string;
 }
 
+interface Match {
+  id: number;
+  name: string;
+  venue?: string;
+  status?: string;
+  format?: string;
+}
+
 export default function TournamentPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [seasons, setSeasons] = useState<Season[]>([]);
+  const [matches, setMatches] = useState<Record<number, Match[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
+        // Tournament details
         const res = await fetch(`/api/tournament/${id}`);
         const data = await res.json();
-
-        // ✅ handle case if API returns [] instead of object
         setTournament(Array.isArray(data) ? data[0] : data);
 
+        // Seasons
         const resSeasons = await fetch(`/api/tournament/${id}/seasons`);
-        const seasonData = await resSeasons.json();
+        const seasonData: Season[] = await resSeasons.json();
         setSeasons(Array.isArray(seasonData) ? seasonData : []);
+
+        // Matches per season
+        const matchesBySeason: Record<number, Match[]> = {};
+        for (const s of seasonData) {
+          try {
+            const resMatches = await fetch(
+              `/api/tournament/${id}/season/${s.id}/matches`
+            );
+            const matchData: Match[] = await resMatches.json();
+            matchesBySeason[s.id] = matchData || [];
+          } catch (e) {
+            matchesBySeason[s.id] = [];
+          }
+        }
+        setMatches(matchesBySeason);
       } catch (err) {
         console.error("Error fetching tournament", err);
       } finally {
@@ -53,60 +78,52 @@ export default function TournamentPage() {
   if (loading) return <p className="p-6">Loading...</p>;
   if (!tournament) return <p className="p-6">Tournament not found</p>;
 
-  function handleViewMatches(seasonId: number): void {
-    router.push(`/tournament/${tournament.id}/season/${seasonId}/matches`);
-  }
-
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Tournament Header */}
-      <div className="bg-white dark:bg-zinc-900 border rounded-2xl p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-          {tournament.name}
-        </h1>
+      <div className="bg-gradient-to-r from-green-500 to-green-700 text-white rounded-2xl shadow-lg p-6">
+        <h1 className="text-3xl font-extrabold mb-1">{tournament.name}</h1>
         {tournament.season_name && (
-          <p className="text-sm text-zinc-500">{tournament.season_name}</p>
+          <p className="text-sm text-green-100">{tournament.season_name}</p>
         )}
       </div>
 
-      {/* League & Country Info */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* League Card */}
+      {/* League & Class Info */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {tournament.league_name && (
-          <div className="rounded-xl bg-white dark:bg-zinc-900 p-4 border shadow-sm flex items-center gap-3">
+          <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 hover:shadow-xl transition transform hover:-translate-y-1 border">
             {tournament.league_hash_image && (
               <img
                 src={`https://images.cricket.com/${tournament.league_hash_image}`}
-                className="h-12 w-12 rounded-full border"
+                className="h-14 w-14 rounded-full border"
                 alt={tournament.league_name}
               />
             )}
             <div>
-              <p className="font-semibold text-zinc-800 dark:text-zinc-100">
+              <p className="font-semibold text-gray-800">
                 {tournament.league_name}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-500">
                 League ID: {tournament.league_id}
               </p>
             </div>
           </div>
         )}
 
-        {/* Country / Class Card */}
         {tournament.class_name && (
-          <div className="rounded-xl bg-white dark:bg-zinc-900 p-4 border shadow-sm flex items-center gap-3">
+          <div className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4 hover:shadow-xl transition transform hover:-translate-y-1 border">
             {tournament.class_hash_image && (
               <img
                 src={`https://images.cricket.com/${tournament.class_hash_image}`}
-                className="h-12 w-12 rounded-full border"
+                className="h-14 w-14 rounded-full border"
                 alt={tournament.class_name}
               />
             )}
             <div>
-              <p className="font-semibold text-zinc-800 dark:text-zinc-100">
+              <p className="font-semibold text-gray-800">
                 {tournament.class_name}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-500">
                 Class ID: {tournament.class_id}
               </p>
             </div>
@@ -114,36 +131,56 @@ export default function TournamentPage() {
         )}
       </div>
 
-      {/* Seasons */}
+      {/* Seasons & Matches */}
       <div>
-        <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mb-3">
-          Seasons
-        </h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-5">Seasons</h2>
         {seasons.length === 0 ? (
-          <p className="text-sm text-zinc-500">No seasons available</p>
+          <p className="text-sm text-gray-500">No seasons available</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-8">
             {seasons.map((s) => (
               <div
                 key={s.id}
-                className="rounded-xl border p-4 bg-white dark:bg-zinc-900 shadow-sm flex flex-col justify-between"
+                onClick={() => router.push(`/tournament/${id}/season/${s.id}/matches`)}
+                className="bg-white rounded-2xl shadow p-6 cursor-pointer hover:shadow-lg transition"
               >
-                <div>
-                  <p className="font-medium text-zinc-800 dark:text-zinc-100">
-                    {s.name}
-                  </p>
+                {/* Season Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={18} className="text-blue-600" />
+                    <h3 className="font-semibold text-lg">{s.name}</h3>
+                  </div>
                   {(s.start_date || s.end_date) && (
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-xs text-gray-500">
                       {s.start_date} – {s.end_date}
                     </p>
                   )}
                 </div>
-                <button
-                  className="mt-3 text-sm text-white bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-300 px-3 py-1 rounded-lg self-start transition"
-                  onClick={() => handleViewMatches(s.id)}
-                >
-                  View Matches
-                </button>
+
+                {/* Matches */}
+                {matches[s.id] && matches[s.id].length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matches[s.id].map((m) => (
+                      <div
+                        key={m.id}
+                        className="border rounded-xl p-4 flex flex-col hover:shadow-md transition"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trophy className="text-green-600" size={16} />
+                          <span className="font-medium">{m.name}</span>
+                        </div>
+                        {m.venue && (
+                          <p className="text-xs text-gray-500">{m.venue}</p>
+                        )}
+                        <p className="text-xs text-gray-400">
+                          {m.format} · {m.status}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Matches available</p>
+                )}
               </div>
             ))}
           </div>

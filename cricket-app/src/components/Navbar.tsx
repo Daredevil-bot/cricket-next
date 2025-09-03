@@ -69,6 +69,13 @@ export default function Navbar() {
             </button>
             <div className="absolute top-full left-0 mt-2 hidden group-hover:block bg-white dark:bg-zinc-800 shadow-lg rounded-lg w-56 z-50">
               <ul className="py-2 max-h-72 overflow-y-auto">
+                {leagues.length === 0 && (
+                  <li>
+                    <span className="px-4 py-2 text-zinc-500 dark:text-zinc-400">
+                      No leagues available
+                    </span>
+                  </li>
+                )}
                 {leagues.map((league) => (
                   <li key={league.id}>
                     <a

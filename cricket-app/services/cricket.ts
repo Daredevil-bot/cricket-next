@@ -1,6 +1,7 @@
 // services/cricket.ts
 
 import { log } from "console";
+import { CricApiMatch } from "@/interface/interfaces";
 
 // services/cricket.ts
 // utils/mappers.ts
@@ -29,7 +30,9 @@ export async function getTournaments() {
 }
   
 
-export function mapCricApiMatch(m: any) {
+
+
+export function mapCricApiMatch(m: CricApiMatch) {
   return {
     id: m.id,
     series: m.tournament_name,

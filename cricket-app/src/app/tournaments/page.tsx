@@ -3,6 +3,7 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
 import { getTournaments } from "../../../services/cricket";
+import { Tournament } from "@/interface/interfaces";
 
 // Mock Tournament Data (you can replace with API call later)
 const mockTournaments = await getTournaments();
@@ -13,7 +14,7 @@ export default function TournamentsPage() {
       <h1 className="text-2xl font-bold mb-6">All Tournaments</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {mockTournaments.map((t) => (
+        {mockTournaments.map((t: Tournament) => (
           <div
             key={t.id}
             className="rounded-2xl border p-4 bg-white/70 dark:bg-zinc-900/60 
