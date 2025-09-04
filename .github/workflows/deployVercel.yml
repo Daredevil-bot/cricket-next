@@ -29,4 +29,4 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_SLUG: ${{ secrets.VERCEL_ORG_SLUG }}
         run: |
-          npx vercel deploy --prod --token=$VERCEL_TOKEN --confirm --scope=$VERCEL_ORG_SLUG --project=cricket-next
+          npx vercel deploy --prod --token=$VERCEL_TOKEN --confirm --scope=$VERCEL_ORG_SLUG
